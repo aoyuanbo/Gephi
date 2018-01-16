@@ -21,22 +21,21 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
-import org.gephi.datalab.api.AttributeColumnsController;
-import org.gephi.graph.api.GraphModel;
 import org.gephi.layout.plugin.force.StepDisplacement;
 import org.gephi.layout.plugin.force.yifanHu.YifanHuLayout;
 import org.gephi.layout.plugin.forceAtlas.ForceAtlasLayout;
 import org.gephi.layout.plugin.fruchterman.FruchtermanReingold;
 import org.gephi.layout.plugin.random.RandomLayout;
-import org.gephi.preview.api.PreviewController;
-import org.gephi.preview.api.PreviewModel;
 import org.gephi.project.api.ProjectController;
-import org.gephi.project.api.Workspace;
 import org.neo4j.driver.v1.exceptions.ClientException;
 
+import com.aoyuanbo.Neo4j.ExportToGML;
+import com.aoyuanbo.Neo4j.ExtractGml;
+import com.aoyuanbo.Neo4j.SaveToNeo4j;
 import com.aoyuanbo.Utils.DBUtils;
 import com.aoyuanbo.Utils.GraphAttrUtils;
 import com.aoyuanbo.Utils.GraphUtils;
@@ -44,10 +43,9 @@ import com.aoyuanbo.Utils.LayoutTabUtils;
 import com.aoyuanbo.action.OpenGraphAction;
 import com.aoyuanbo.action.PreviewSketch;
 import com.aoyuanbo.myLayout.AttrGatherLayout;
+import com.itextpdf.text.log.SysoLogger;
 
-import Neo4j.ExportToGML;
-import Neo4j.ExtractGml;
-import Neo4j.SaveToNeo4j;
+import javax.swing.ImageIcon;
 
 public class Frame {
 
@@ -98,22 +96,24 @@ public class Frame {
 	private final JMenuItem thicknessItem = new JMenuItem();
 	private final JMenuItem edgeColorItem = new JMenuItem();
 	private final JMenu ActionSet = new JMenu();
+	private final JMenuItem indexMenuItem =new JMenuItem();
 	private final JMenu Control = new JMenu();
 	private final JMenuItem zoomToFitItem = new JMenuItem();
 	private final JMenu help = new JMenu();
-	private final JMenuItem menuItem_20 = new JMenuItem();
+	private final JMenuItem aboutMenuItem = new JMenuItem();
 	private final JMenuItem importFileItem = new JMenuItem("\u5BFC\u5165");
 	private static JButton runButton;
 	private static JButton backgroundColorButton;
 	private static boolean itemIsEnable = false;
+	private final JMenuItem searchMenuItem = new JMenuItem("搜索");
 
 	//定义与图相关的一些变量
-	private static ProjectController pc;
-	private static Workspace workspace;
-	private static GraphModel graphModel;
-	private static PreviewController previewController;
-	private static PreviewModel previewModel;
-	private static AttributeColumnsController attributeColumnsController;
+//	private static ProjectController pc;
+//	private static Workspace workspace;
+//	private static GraphModel graphModel;
+//	private static PreviewController previewController;
+//	private static PreviewModel previewModel;
+//	private static AttributeColumnsController attributeColumnsController;
 	
 
 	/**
@@ -146,7 +146,7 @@ public class Frame {
 	private void initialize() {
 		ProjectController pc = GraphUtils.getProjectController();
 		pc.newProject();
-		Workspace workspace = GraphUtils.getWorkspace();
+//		Workspace workspace = GraphUtils.getWorkspace();
 
 		frame = new JFrame("主界面");
 		frame.addComponentListener(new ComponentAdapter() {
@@ -219,7 +219,7 @@ public class Frame {
 						JOptionPane.showMessageDialog(null, "数据库没有连接");
 					}
 				} catch (ClientException e) {
-					// TODO 自动生成的 catch 块
+					
 					JOptionPane.showMessageDialog(null, "数据库已经关闭");
 				}
 			}
@@ -256,8 +256,9 @@ public class Frame {
 
 		File.add(saveToNeo4jItem);
 		
-		JMenu mnNewMenu = new JMenu("\u5BFC\u51FA");
-		File.add(mnNewMenu);
+		JMenu exportMenu = new JMenu("\u5BFC\u51FA");
+		exportMenu.setFont(new Font("Dialog", Font.PLAIN, 12));
+		File.add(exportMenu);
 		quitItem.setFont(new Font("微软雅黑", Font.PLAIN, 12));
 		quitItem.setText("\u9000\u51FA");
 
@@ -434,9 +435,10 @@ public class Frame {
 		straightItem.setEnabled(false);
 
 		EdgeSet.add(straightItem);
+		ActionSet.setHorizontalAlignment(SwingConstants.CENTER);
 		ActionSet.setFont(new Font("微软雅黑", Font.PLAIN, 12));
 		ActionSet.setMnemonic('A');
-		ActionSet.setText("Action\u914D\u7F6E(A)");
+		ActionSet.setText("Action(A)");
 		thicknessItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				GraphAttrUtils.edgeThickness();
@@ -457,6 +459,24 @@ public class Frame {
 		EdgeSet.add(edgeColorItem);
 		
 		menuBar.add(ActionSet);
+		indexMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				indexItemActionPerformed(e);
+			}
+		});
+		
+		indexMenuItem.setText("构建索引");
+		indexMenuItem.setBackground(new Color(238, 238, 238));
+		indexMenuItem.setFont(new Font("微软雅黑", Font.PLAIN, 12));
+		ActionSet.add(indexMenuItem);
+		ActionSet.add(searchMenuItem);
+		searchMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				searchMenuItemActionPerformed(e);
+			}
+		});
+		searchMenuItem.setFont(new Font("微软雅黑", Font.PLAIN, 12));
+		
 		Control.setFont(new Font("微软雅黑", Font.PLAIN, 12));
 		Control.setMnemonic('C');
 		Control.setText("\u63A7\u5236\u5668(C)");
@@ -472,10 +492,10 @@ public class Frame {
 		help.setText("\u5E2E\u52A9(H)");
 
 		menuBar.add(help);
-		menuItem_20.setFont(new Font("微软雅黑", Font.PLAIN, 12));
-		menuItem_20.setText("\u5173\u4E8E");
+		aboutMenuItem.setFont(new Font("微软雅黑", Font.PLAIN, 12));
+		aboutMenuItem.setText("\u5173\u4E8E");
 
-		help.add(menuItem_20);
+		help.add(aboutMenuItem);
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[] { 135, 401, 0 };
 		gridBagLayout.rowHeights = new int[] { 341, 0 };
@@ -615,13 +635,10 @@ public class Frame {
 	
 	
 	private void openItemActionPerformed(ActionEvent e) {
-		// TODO 自动生成的方法存根
-
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException
 				| UnsupportedLookAndFeelException e2) {
-			// TODO 自动生成的 catch 块
 			e2.printStackTrace();
 		}
 		JFileChooser choose = new JFileChooser();
@@ -630,7 +647,7 @@ public class Frame {
 		int op = choose.showOpenDialog(this.getFrame());
 		if (op == JFileChooser.CANCEL_OPTION) {
 		} else {
-			String[] args = null;
+//			String[] args = null;
 			// File类表示文件或路径
 			File f = choose.getSelectedFile();
 			OpenGraphAction openGraph = new OpenGraphAction(f);
@@ -660,7 +677,16 @@ public class Frame {
 			}
 		});
 	}
-
+	//构建索引按钮动作
+	private void indexItemActionPerformed(ActionEvent e){
+		new IndexDialog();	
+	}
+	
+	//搜索按钮动作
+	private void searchMenuItemActionPerformed(ActionEvent e) {
+		new SearchDialog();
+	}
+	
 	public void sendGraphToDisplay(PreviewSketch previewSketch) {
 
 		display.add(previewSketch, BorderLayout.CENTER);

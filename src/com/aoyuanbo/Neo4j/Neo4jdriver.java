@@ -1,4 +1,4 @@
-package Neo4j;
+package com.aoyuanbo.Neo4j;
 
 
 import javax.swing.JOptionPane;
