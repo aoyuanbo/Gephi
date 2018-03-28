@@ -32,6 +32,8 @@ import org.gephi.preview.api.PreviewMouseEvent;
 import org.gephi.preview.api.Vector;
 import org.openide.util.Lookup;
 
+import com.aoyuanbo.Utils.GraphUtils;
+
 /**
  *
  * @author mbastian
@@ -51,7 +53,11 @@ public class PreviewSketch extends JPanel implements MouseListener, MouseWheelLi
     private boolean inited;
     private final boolean isRetina;
 
-    public PreviewSketch(G2DTarget target) {
+    public G2DTarget getTarget() {
+		return target;
+	}
+
+	public PreviewSketch(G2DTarget target) {
         this.target = target;
         previewController = Lookup.getDefault().lookup(PreviewController.class);
         isRetina = false;
@@ -87,21 +93,29 @@ public class PreviewSketch extends JPanel implements MouseListener, MouseWheelLi
     public void mouseClicked(MouseEvent e) {
     	PreviewMouseEvent event=buildPreviewMouseEvent(e, PreviewMouseEvent.Type.CLICKED);
         if (!previewController.sendMouseEvent(event)) {
-        	for(Node node: Lookup.getDefault().lookup(GraphController.class).getGraphModel().getGraph().getNodes()){
-        		if(clickingInNode(node, event)){
-        			node.setColor(Color.RED);
-        			node.setSize(20);
-        			System.out.println(node.getId()+""+node.size());
-        			event.setConsumed(true);
-        			return;
-        		}
-        		
+        	if(GraphUtils.nodes!=null){
+        		for (Node node : Lookup.getDefault().lookup(GraphController.class).getGraphModel().getGraph().getNodes()) {      			
+    				if(GraphUtils.nodes.contains(node)){
+    					node.setColor(Color.blue);
+    					node.setSize(8.f);
+    				}
+    			}
         	}
+//        	for(Node node: Lookup.getDefault().lookup(GraphController.class).getGraphModel().getGraph().getNodes()){
+//        		if(clickingInNode(node, event)){
+//        			node.setColor(Color.RED);
+////        			node.setSize(20);
+//        			System.out.println(node.getId()+""+node.size());
+//        			event.setConsumed(true);
+//        			return;
+//        		}
+//        		
+//        	}
         	previewController.refreshPreview();
         	refreshLoop.refreshSketch();
         }
-        
-    }
+    	
+}
 
     @Override
     public void mousePressed(MouseEvent e) {
@@ -179,12 +193,13 @@ public class PreviewSketch extends JPanel implements MouseListener, MouseWheelLi
     	GraphModel graphModel =Lookup.getDefault().lookup(GraphController.class).getGraphModel();
     	DirectedGraph graph = graphModel.getDirectedGraph();
     	for(Node node: Lookup.getDefault().lookup(GraphController.class).getGraphModel().getGraph().getNodes()){
-	    		if (mouseInNode(node, screenPos)) {
+	    		
+    		if (mouseInNode(node, screenPos)) {
 	    			node.setColor(Color.red);	
 	                NodeIterable it = graph.getNeighbors(node);
 	                Node[] nodes = it.toArray();
 	                for(Node n:nodes) {
-	                    n.setColor(Color.RED);
+	                    n.setColor(Color.YELLOW);
 	                }
 
 	                previewController.refreshPreview();

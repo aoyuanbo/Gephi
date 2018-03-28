@@ -22,7 +22,14 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
+import org.gephi.graph.api.Graph;
+import org.gephi.graph.api.GraphController;
+import org.gephi.graph.api.Node;
+import org.gephi.graph.api.UndirectedGraph;
+import org.gephi.graph.impl.UndirectedDecorator;
+import org.openide.util.Lookup;
 
+import com.aoyuanbo.Utils.GraphUtils;
 import com.aoyuanbo.Utils.IndexUtils;
 import com.aoyuanbo.action.SearchAction;
 
@@ -30,6 +37,7 @@ import javax.swing.JTextArea;
 import javax.swing.JEditorPane;
 import javax.swing.JScrollPane;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.awt.event.ActionEvent;
 
 public class SearchDialog extends JDialog {
@@ -47,16 +55,16 @@ public class SearchDialog extends JDialog {
 	/**
 	 * Launch the application.
 	 */
-//	public static void main(String[] args) {
-//		try {
-//			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-//			SearchDialog dialog = new SearchDialog();
-//			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-//			dialog.setVisible(true);
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//		}
-//	}
+	public static void main(String[] args) {
+		try {
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+			SearchDialog dialog = new SearchDialog();
+			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+			dialog.setVisible(true);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 
 	/**
 	 * Create the dialog.
@@ -150,20 +158,36 @@ public class SearchDialog extends JDialog {
 				//确定按钮动作
 				okButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
+						resultText.setText("");
+//						Graph undirectedGraph=Lookup.getDefault().lookup(GraphController.class).getGraphModel().getGraph();
+//						for (Node node : undirectedGraph.getNodes()) {
+//							node.setSize(10);
+//						}
 						searchString=searchText.getText();
 						searchAction.setIndexFile(IndexUtils.getIndexFile());
+						if(searchAction.getIndexFile()==null){
+							String indexFile=JOptionPane.showInputDialog("请输入索引路径");
+							searchAction.setIndexFile(new File(indexFile));
+							IndexUtils.setIndexFile(new File(indexFile));
+						}
 						try {
 							if(!searchString.equals("")){
 							resulTopDocs=searchAction.search(searchString, fieldString);
 							IndexSearcher searcher=searchAction.getSearcher();
 							for (ScoreDoc scoreDoc : resulTopDocs.scoreDocs) {		
 									Document document=searcher.doc(scoreDoc.doc);
-									resultText.setText(document.get(fieldString));
-								}
+									resultText.append(document.get("name")+" "+document.get("birth")+" "+document.get("phone")+" "+document.get("address")+"\n");
+//									undirectedGraph=Lookup.getDefault().lookup(GraphController.class).getGraphModel().getGraph();
+//									undirectedGraph.getNode(document.get(fieldString)).setSize(20.f);															
+//									GraphUtils.getPreviewController().refreshPreview();
+									System.out.println("wc");
+							}
+	
 							}else {
 								JOptionPane.showMessageDialog(null, "请输入搜索内容！");
 							}
 						} catch (Exception e1) {
+							e1.printStackTrace();
 							JOptionPane.showMessageDialog(null, "未构建索引");
 						}
 						

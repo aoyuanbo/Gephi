@@ -12,7 +12,7 @@ public class ExtractGml {
 	private List<String> node;
 	private List<String> edge;
 	private String result;
-	//¶ÁÈ¡GMLÎÄ¼ş£¬×ª»»³É×Ö·û´®
+	//è¯»å–GMLæ–‡ä»¶ï¼Œè½¬æ¢æˆå­—ç¬¦ä¸²
 	public String readGML(String url){
 		
 		File file=new File(url);
@@ -31,14 +31,14 @@ public class ExtractGml {
 			reader.close();
 //			System.out.println(sbBuffer);
 		} catch (IOException e) {
-			// TODO ×Ô¶¯Éú³ÉµÄ catch ¿é
+			// TODO è‡ªåŠ¨ç”Ÿæˆçš„ catch å—
 			e.printStackTrace();
 		}
 		result=sbBuffer.toString().replaceAll("\\s{2,}", " ");
 		return result;
 	}
 	
-	//»ñÈ¡GML×Ö·û´®£¬³éÈ¡nodeĞÅÏ¢£¬´æ´¢ÔÚlistÖĞ
+	//è·å–GMLå­—ç¬¦ä¸²ï¼ŒæŠ½å–nodeä¿¡æ¯ï¼Œå­˜å‚¨åœ¨listä¸­
 	public List<String> getNode(String gml){
 		node=new ArrayList<>();
 		String nodeReg="node \\[(.*?)\\]";
@@ -52,7 +52,7 @@ public class ExtractGml {
 		}
 		return node;	
 	}
-	//»ñÈ¡GML×Ö·û´®£¬³éÈ¡edgeĞÅÏ¢£¬´æ´¢ÔÚlistÖĞ	
+	//è·å–GMLå­—ç¬¦ä¸²ï¼ŒæŠ½å–edgeä¿¡æ¯ï¼Œå­˜å‚¨åœ¨listä¸­	
 	public List<String> getEdge(String gml){
 		edge=new ArrayList<>();
 		String edgeReg="edge \\[(.*?)\\]";
@@ -67,5 +67,16 @@ public class ExtractGml {
 		return edge;
 	}
 	
-	
+	public static void main(String[] args) {
+		String gmlString="C:\\Users\\lenovo\\Desktop\\11.gml";
+		ExtractGml extractGml=new ExtractGml();
+		extractGml.readGML(gmlString);
+		for (String string : extractGml.getNode(gmlString)) {
+			String s[]=string.split(" ");
+			for (String string2 : s) {
+				System.out.print(string2);
+				System.out.print("\n");
+			}
+		}
+	}
 }

@@ -3,9 +3,12 @@ package com.aoyuanbo.action;
 import java.io.File;
 
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.core.WhitespaceAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
+import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
@@ -26,6 +29,12 @@ public class SearchAction {
 
 
 
+	public File getIndexFile() {
+		return indexFile;
+	}
+
+
+
 	public IndexSearcher getSearcher() {
 		return searcher;
 	}
@@ -35,6 +44,7 @@ public class SearchAction {
 	/**
 	 * 
 	 * @param searchText 查询的内容
+	 * @param field 查询的文本域
 	 * @throws Exception
 	 */
 	public TopDocs search(String searchText,String field) throws Exception{
@@ -46,7 +56,7 @@ public class SearchAction {
 		//创建索引查找器
 		searcher=new IndexSearcher(reader);
 		//创建查询分词器
-		Analyzer analyzer=new StandardAnalyzer();
+		Analyzer analyzer=new WhitespaceAnalyzer();
 		//创建查询解析器
 		QueryParser queryParser=new QueryParser(field, analyzer);
 		Query query=queryParser.parse(searchText);
@@ -58,8 +68,27 @@ public class SearchAction {
 //
 //			System.out.println(document.get("address"));
 //		}
-		reader.close();
-		directory.close();
+//		reader.close();
+//		directory.close();
 		return docs;
+	}
+	
+	//多文本域查询
+	public TopDocs search(String searchText) throws Exception{
+		//创建Directory，获取索引
+		Directory directory=FSDirectory.open(indexFile.toPath());
+		//创建IndexReader，读取索引
+		IndexReader reader=DirectoryReader.open(directory);
+		//创建索引查找器
+		searcher=new IndexSearcher(reader);
+		//创建查询分词器
+		Analyzer analyzer=new WhitespaceAnalyzer();
+		//创建查询解析器
+		String fields[]={"name","birth","phone","address"};
+		MultiFieldQueryParser multiFieldQueryParser=new MultiFieldQueryParser(fields, analyzer);
+		Query query=multiFieldQueryParser.parse(searchText);
+		TopDocs docs=searcher.search(query, 10);
+		return docs;
+		
 	}
 }

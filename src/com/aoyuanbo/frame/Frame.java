@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.UnsupportedEncodingException;
 
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -39,13 +40,17 @@ import com.aoyuanbo.Neo4j.SaveToNeo4j;
 import com.aoyuanbo.Utils.DBUtils;
 import com.aoyuanbo.Utils.GraphAttrUtils;
 import com.aoyuanbo.Utils.GraphUtils;
+import com.aoyuanbo.Utils.IndexUtils;
 import com.aoyuanbo.Utils.LayoutTabUtils;
+import com.aoyuanbo.action.Export;
 import com.aoyuanbo.action.OpenGraphAction;
 import com.aoyuanbo.action.PreviewSketch;
 import com.aoyuanbo.myLayout.AttrGatherLayout;
 import com.itextpdf.text.log.SysoLogger;
 
 import javax.swing.ImageIcon;
+import javax.swing.JTextField;
+import javax.swing.JLabel;
 
 public class Frame {
 
@@ -89,7 +94,6 @@ public class Frame {
 	private final JMenu NodeSet = new JMenu();
 	private final JMenuItem rectangleItem = new JMenuItem();
 	private final JMenuItem roundItem = new JMenuItem();
-	private final JMenuItem roundRectangleItem = new JMenuItem();
 	private final JMenu EdgeSet = new JMenu();
 	private final JMenuItem curveItem = new JMenuItem();
 	private final JMenuItem straightItem = new JMenuItem();
@@ -98,7 +102,8 @@ public class Frame {
 	private final JMenu ActionSet = new JMenu();
 	private final JMenuItem indexMenuItem =new JMenuItem();
 	private final JMenu Control = new JMenu();
-	private final JMenuItem zoomToFitItem = new JMenuItem();
+	private final JMenuItem infoCheckMenuItem = new JMenuItem();
+	private final JMenuItem allGraphCheckMenuItem = new JMenuItem("全图检测");
 	private final JMenu help = new JMenu();
 	private final JMenuItem aboutMenuItem = new JMenuItem();
 	private final JMenuItem importFileItem = new JMenuItem("\u5BFC\u5165");
@@ -106,6 +111,9 @@ public class Frame {
 	private static JButton backgroundColorButton;
 	private static boolean itemIsEnable = false;
 	private final JMenuItem searchMenuItem = new JMenuItem("搜索");
+	private final JMenuItem settingINdexMenuItem = new JMenuItem("设置索引");
+	private JTextField nodeNum;
+	private JTextField edgeNum;
 
 	//定义与图相关的一些变量
 //	private static ProjectController pc;
@@ -114,7 +122,7 @@ public class Frame {
 //	private static PreviewController previewController;
 //	private static PreviewModel previewModel;
 //	private static AttributeColumnsController attributeColumnsController;
-	
+
 
 	/**
 	 * Launch the application.
@@ -149,6 +157,7 @@ public class Frame {
 //		Workspace workspace = GraphUtils.getWorkspace();
 
 		frame = new JFrame("主界面");
+		frame.setTitle("虚假信息检测系统");
 		frame.addComponentListener(new ComponentAdapter() {
 			@Override
 			public void componentResized(ComponentEvent e) {
@@ -259,6 +268,36 @@ public class Frame {
 		JMenu exportMenu = new JMenu("\u5BFC\u51FA");
 		exportMenu.setFont(new Font("Dialog", Font.PLAIN, 12));
 		File.add(exportMenu);
+		
+		JMenuItem exPdf = new JMenuItem("PDF文件");
+		exPdf.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				Export export=Export.getInstance();
+				export.exportPDF();
+			}
+		});
+		exPdf.setFont(new Font("微软雅黑", Font.PLAIN, 12));
+		exportMenu.add(exPdf);
+		
+		JMenuItem exGml = new JMenuItem("GML文件");
+		exGml.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Export export=Export.getInstance();
+				export.exportGML();
+			}
+		});
+		exGml.setFont(new Font("微软雅黑", Font.PLAIN, 12));
+		exportMenu.add(exGml);
+		
+		JMenuItem exGexf = new JMenuItem("GEXF文件");
+		exGexf.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Export export=Export.getInstance();
+				export.exportGEXF();
+			}
+		});
+		exGexf.setFont(new Font("微软雅黑", Font.PLAIN, 12));
+		exportMenu.add(exGexf);
 		quitItem.setFont(new Font("微软雅黑", Font.PLAIN, 12));
 		quitItem.setText("\u9000\u51FA");
 
@@ -396,20 +435,15 @@ public class Frame {
 
 		menuBar.add(NodeSet);
 		rectangleItem.setFont(new Font("微软雅黑", Font.PLAIN, 12));
-		rectangleItem.setText("\u77E9\u5F62");
+		rectangleItem.setText("颜色");
 		rectangleItem.setEnabled(false);
 
 		NodeSet.add(rectangleItem);
 		roundItem.setFont(new Font("微软雅黑", Font.PLAIN, 12));
-		roundItem.setText("\u5706\u5F62");
+		roundItem.setText("尺寸");
 		roundItem.setEnabled(false);
 
 		NodeSet.add(roundItem);
-		roundRectangleItem.setFont(new Font("微软雅黑", Font.PLAIN, 12));
-		roundRectangleItem.setText("\u5706\u89D2\u77E9\u5F62");
-		roundRectangleItem.setEnabled(false);
-
-		NodeSet.add(roundRectangleItem);
 		EdgeSet.setFont(new Font("微软雅黑", Font.PLAIN, 12));
 		EdgeSet.setMnemonic('S');
 		EdgeSet.setText("\u8FB9\u914D\u7F6E(S)");
@@ -437,8 +471,8 @@ public class Frame {
 		EdgeSet.add(straightItem);
 		ActionSet.setHorizontalAlignment(SwingConstants.CENTER);
 		ActionSet.setFont(new Font("微软雅黑", Font.PLAIN, 12));
-		ActionSet.setMnemonic('A');
-		ActionSet.setText("Action(A)");
+		ActionSet.setMnemonic('I');
+		ActionSet.setText("检索功能(I)");
 		thicknessItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				GraphAttrUtils.edgeThickness();
@@ -468,7 +502,19 @@ public class Frame {
 		indexMenuItem.setText("构建索引");
 		indexMenuItem.setBackground(new Color(238, 238, 238));
 		indexMenuItem.setFont(new Font("微软雅黑", Font.PLAIN, 12));
+		indexMenuItem.setEnabled(false);
 		ActionSet.add(indexMenuItem);
+		settingINdexMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				String indexFile=JOptionPane.showInputDialog("请输入索引路径");
+				IndexUtils.setIndexFile(new File(indexFile));
+			}
+		});
+		
+		
+		settingINdexMenuItem.setEnabled(false);
+		settingINdexMenuItem.setFont(new Font("微软雅黑", Font.PLAIN, 12));
+		ActionSet.add(settingINdexMenuItem);
 		ActionSet.add(searchMenuItem);
 		searchMenuItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -476,17 +522,44 @@ public class Frame {
 			}
 		});
 		searchMenuItem.setFont(new Font("微软雅黑", Font.PLAIN, 12));
-		
+		searchMenuItem.setEnabled(false);
 		Control.setFont(new Font("微软雅黑", Font.PLAIN, 12));
 		Control.setMnemonic('C');
-		Control.setText("\u63A7\u5236\u5668(C)");
-
+		Control.setText("检测功能(C)");
+		Control.setEnabled(false);
 		menuBar.add(Control);
-		zoomToFitItem.setFont(new Font("微软雅黑", Font.PLAIN, 12));
-		zoomToFitItem.setText("\u9002\u5E94\u5C4F\u5E55\u663E\u793A");
-		zoomToFitItem.setEnabled(false);
+		allGraphCheckMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				try {
+					GraphCheckDialog dialog = new GraphCheckDialog();
+					dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+					dialog.setVisible(true);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+		
+		
+		allGraphCheckMenuItem.setFont(new Font("微软雅黑", Font.PLAIN, 12));
+		allGraphCheckMenuItem.setEnabled(false);
+		Control.add(allGraphCheckMenuItem);
+		infoCheckMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					InfoCheckDialog dialog = new InfoCheckDialog();
+					dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+					dialog.setVisible(true);
+				} catch (Exception e1) {
+					e1.printStackTrace();
+				}
+			}
+		});
+		infoCheckMenuItem.setFont(new Font("微软雅黑", Font.PLAIN, 12));
+		infoCheckMenuItem.setText("指定信息检测");
+		infoCheckMenuItem.setEnabled(false);
 
-		Control.add(zoomToFitItem);
+		Control.add(infoCheckMenuItem);
 		help.setFont(new Font("微软雅黑", Font.PLAIN, 12));
 		help.setMnemonic('H');
 		help.setText("\u5E2E\u52A9(H)");
@@ -535,6 +608,30 @@ public class Frame {
 		backgroundColorButton.setBounds(30, 300, 80, 25);
 		infopanel.add(backgroundColorButton);
 		
+		nodeNum = new JTextField();
+		nodeNum.setHorizontalAlignment(SwingConstants.CENTER);
+		nodeNum.setColumns(10);
+		nodeNum.setBounds(73, 62, 49, 22);
+		nodeNum.setEditable(false);
+		infopanel.add(nodeNum);
+		
+		edgeNum = new JTextField();
+		edgeNum.setHorizontalAlignment(SwingConstants.CENTER);
+		edgeNum.setColumns(10);
+		edgeNum.setBounds(73, 96, 49, 22);
+		edgeNum.setEditable(false);
+		infopanel.add(edgeNum);
+		
+		JLabel label = new JLabel("节点数：");
+		label.setFont(new Font("黑体", Font.PLAIN, 14));
+		label.setBounds(12, 64, 58, 18);
+		infopanel.add(label);
+		
+		JLabel label_1 = new JLabel("边数：");
+		label_1.setFont(new Font("黑体", Font.PLAIN, 14));
+		label_1.setBounds(12, 98, 58, 18);
+		infopanel.add(label_1);
+		
 		display.setBackground(Color.BLUE);
 		display.setLayout(new BorderLayout());
 		GridBagConstraints gbc_display = new GridBagConstraints();
@@ -553,13 +650,12 @@ public class Frame {
 		fruchtermanLayoutItem.setEnabled(itemIsEnable);
 		rectangleItem.setEnabled(itemIsEnable);
 		roundItem.setEnabled(itemIsEnable);
-		roundRectangleItem.setEnabled(itemIsEnable);
 		curveItem.setEnabled(itemIsEnable);
 		straightItem.setEnabled(itemIsEnable);
 		thicknessItem.setFont(new Font("微软雅黑", Font.PLAIN, 12));
 		thicknessItem.setEnabled(itemIsEnable);
 		edgeColorItem.setEnabled(itemIsEnable);
-		zoomToFitItem.setEnabled(itemIsEnable);
+		infoCheckMenuItem.setEnabled(itemIsEnable);
 		
 		
 		
@@ -578,12 +674,16 @@ public class Frame {
 		edgeLabelMenu.setEnabled(itemIsEnable);
 		rectangleItem.setEnabled(itemIsEnable);
 		roundItem.setEnabled(itemIsEnable);
-		roundRectangleItem.setEnabled(itemIsEnable);
 		curveItem.setEnabled(itemIsEnable);
 		straightItem.setEnabled(itemIsEnable);
 		thicknessItem.setEnabled(itemIsEnable);
 		edgeColorItem.setEnabled(itemIsEnable);
-		zoomToFitItem.setEnabled(itemIsEnable);
+		infoCheckMenuItem.setEnabled(itemIsEnable);
+		allGraphCheckMenuItem.setEnabled(itemIsEnable);
+		Control.setEnabled(itemIsEnable);
+		indexMenuItem.setEnabled(itemIsEnable);
+		searchMenuItem.setEnabled(itemIsEnable);
+		settingINdexMenuItem.setEnabled(itemIsEnable);
 		this.getFrame().repaint();
 	}
 
@@ -652,6 +752,8 @@ public class Frame {
 			File f = choose.getSelectedFile();
 			OpenGraphAction openGraph = new OpenGraphAction(f);
 			display.add(openGraph.getPreviewSketch(), BorderLayout.CENTER);
+			nodeNum.setText(""+GraphUtils.getGraphModel().getGraph().getNodeCount());
+			edgeNum.setText(""+GraphUtils.getGraphModel().getGraph().getEdgeCount());
 			showItem(true);
 			try {
 				System.out.println(new String("文件名为".getBytes("UTF-8")) + ":" + f.getName());// 之所以这么麻烦是因为在run
@@ -688,8 +790,9 @@ public class Frame {
 	}
 	
 	public void sendGraphToDisplay(PreviewSketch previewSketch) {
-
 		display.add(previewSketch, BorderLayout.CENTER);
+		nodeNum.setText(""+GraphUtils.getGraphModel().getGraph().getNodeCount());
+		edgeNum.setText(""+GraphUtils.getGraphModel().getGraph().getEdgeCount());
 		showItem(true);
 	}
 }

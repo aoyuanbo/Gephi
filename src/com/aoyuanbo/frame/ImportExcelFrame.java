@@ -23,9 +23,9 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
-import com.aoyuanbo.GetData;
+import com.aoyuanbo.Utils.GetData;
 
-class ImportExcelFrame {
+public class ImportExcelFrame {
 	private static Frame mainframe;
 	
 	static private JTable dataTable = new JTable();

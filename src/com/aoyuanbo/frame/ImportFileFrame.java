@@ -31,7 +31,6 @@ import org.gephi.preview.api.RenderTarget;
 import org.gephi.preview.types.DependantOriginalColor;
 import org.gephi.preview.types.EdgeColor;
 
-import com.aoyuanbo.PreviewPanel;
 import com.aoyuanbo.Utils.GraphUtils;
 import com.aoyuanbo.action.ImportCSVFileAction;
 import com.aoyuanbo.action.PreviewSketch;

@@ -23,7 +23,7 @@ import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 
-import com.aoyuanbo.GetData;
+import com.aoyuanbo.Utils.GetData;
 
 public class IndexAction {
 	
@@ -71,7 +71,7 @@ public class IndexAction {
 		for(int i=0;i<data.length;i++){
 			doc=new Document();
 			doc.add(new TextField("name", data[i][0], Field.Store.YES));
-			doc.add(new TextField("birth", data[i][2],Field.Store.YES));
+//			doc.add(new TextField("birth", data[i][2],Field.Store.YES));
 			doc.add(new TextField("phone", data[i][3], Field.Store.YES));
 			doc.add(new TextField("address", data[i][4], Field.Store.YES));
 			writer.addDocument(doc);

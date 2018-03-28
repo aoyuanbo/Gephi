@@ -1,8 +1,12 @@
 package com.aoyuanbo.Utils;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.gephi.datalab.api.AttributeColumnsController;
 import org.gephi.graph.api.GraphController;
 import org.gephi.graph.api.GraphModel;
+import org.gephi.graph.api.Node;
 import org.gephi.layout.api.LayoutController;
 import org.gephi.preview.api.G2DTarget;
 import org.gephi.preview.api.PreviewController;
@@ -22,6 +26,9 @@ public class GraphUtils {
 	private static LayoutController layoutController;
 	public static G2DTarget target;
 	
+	public static  List<Node> nodes=new ArrayList<Node>();
+
+
 	public static ProjectController getProjectController(){
 		if(pc==null){
 			pc=Lookup.getDefault().lookup(ProjectController.class);
